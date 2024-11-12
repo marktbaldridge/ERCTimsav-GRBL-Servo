@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension" type="effect">
+    <name>Path to G-code Converter</name>
+    <id>path2gcode.effect</id>
+
+    <param name="feedrate" type="float" min="0.0" max="10000.0" _gui-text="Feed Rate (mm/min):">600</param>
+    <param name="servo_angle" type="int" min="0" max="90" _gui-text="Servo Angle (0-90 degrees)">90</param>
+    <param name="directory" type="string" _gui-text="Directory:"></param>
+    <param name="filename" type="string" _gui-text="Filename:">output.gcode</param>
+    <param name="add_numeric_suffix_to_filename" type="boolean" _gui-text="Add numeric suffix to filename">true</param>
+
+    <effect>
+        <effects-menu>
+            <submenu _name="ERC Tim Sav"/>
+        </effects-menu>
+        <object-type>path</object-type>
+        <requires-selection>true</requires-selection>
+    </effect>
+
+    <script>
+        <command reldir="extensions" interpreter="python">path_to_gcode.py</command>
+    </script>
+</inkscape-extension>
