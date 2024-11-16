@@ -16,6 +16,7 @@ We skip all that. Gcode uses the top-right cartesian plain, but inkscape (presum
  - Add GUI elements for different feed rates for move and cut/score
  - Keep track of cutter up/down for fewer gcode commands
  - Enable Y offset - GUI adjustable, but default to document height.
+ - Fix that curves don't use unit conversions (right now, they assume everyone is in mm)
 
 ## Project Objectives:
  - Primary focus on CNC needle cutters for foam board. May also apply to laser cutters. Zero cut width assumed.

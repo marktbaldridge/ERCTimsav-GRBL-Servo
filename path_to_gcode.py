@@ -9,7 +9,9 @@ from inkex.units import convert_unit
 class PathToGcode(inkex.EffectExtension):
     def add_arguments(self, pars):
         pars.add_argument("--feedrate", type=float, default=1500.0, help="Feed Rate (mm/min)")
-        pars.add_argument("--servo_angle", type=int, default=100.0, help="Servo Angle (0-90 degrees)")
+        pars.add_argument("--servo_up", type=str, default="M5", help="Gcode to move cutter up")
+        pars.add_argument("--servo_down", type=str, default="M3 S90", help="Gcode to put cutter down")
+        pars.add_argument("--mark_zero", type=inkex.Boolean, default=True, help="Mark 0,0")
         pars.add_argument("--directory", type=str, default="", help="Output directory")
         pars.add_argument("--filename", type=str, default="output.gcode", help="Output filename")
         pars.add_argument("--add_numeric_suffix_to_filename", type=inkex.Boolean, default=True, help="Add numeric suffix to filename")
@@ -18,17 +20,22 @@ class PathToGcode(inkex.EffectExtension):
         if not self.svg.selected:
             inkex.errormsg("Please select at least one path.")
             return
-
         # G-code header
         self.gcode = [
             "G21 ; Set units to millimeters",
             "G90 ; Use absolute coordinates",
             "M5 ; Servo_Up",
         ]
+        self.servo_status_down = False;
 
         # Parameters
         feedrate = self.options.feedrate
-        servo_angle = self.options.servo_angle
+        
+        if self.options.mark_zero:
+            self.gcode.append("G0 X0 Y0 ; Move to origin")
+            self.servo_down()
+            self.gcode.append("G4 P500 ; dwell for .5sec")
+            self.servo_up()
 
         # Unit conversion: document units to millimeters
         doc_unit = self.svg.unit
@@ -62,7 +69,7 @@ class PathToGcode(inkex.EffectExtension):
                     y_mm = y * scale_factor
                     
                     # Move to the starting point without cutting
-                    self.gcode.append("M5")
+                    self.servo_up()
                     self.gcode.append(f"G0 X{x_mm:.4f} Y{y_mm:.4f}")
                     if starting_pos == None:
                         starting_pos = (x,y)
@@ -77,10 +84,9 @@ class PathToGcode(inkex.EffectExtension):
                     x_mm = x * scale_factor
                     y_mm = y * scale_factor
 
-                    # Turn on laser and cut to the point
-                    self.gcode.append(f"M3 S90")
+                    #Put the servo down and cut to the point
+                    self.servo_down()
                     self.gcode.append(f"G1 X{x_mm:.4f} Y{y_mm:.4f} F{feedrate}")
-                    self.gcode.append("M5")
                 elif isinstance(segment, ZoneClose) or isinstance(segment, zoneClose): #Check if SVG Close command
                     #Save final position as current position
                     current_pos = starting_pos
@@ -88,10 +94,9 @@ class PathToGcode(inkex.EffectExtension):
                     # Close the path by returning to the starting point
                     x_mm , y_mm = starting_pos[0] * scale_factor, starting_pos[1] * scale_factor
 
-                    # Turn on laser and cut to the point
-                    self.gcode.append(f"M3 S90")
+                    #Put the servo down, cut to the point, put the servo up
+                    self.servo_down()
                     self.gcode.append(f"G1 X{x_mm:.4f} Y{y_mm:.4f} F{feedrate}")
-                    self.gcode.append("M5")
                 elif isinstance(segment, Curve): #Check if SVG Cubic Bezier curve.
                     #Get first control point
                     p1 = (segment.x2, segment.y2)
@@ -101,18 +106,19 @@ class PathToGcode(inkex.EffectExtension):
                     p3 = (segment.x4, segment.y4)
                     
                     
-                    #Using circular arcs, approximate the curve
+                    #Put the servo down. Using circular arcs, approximate the curve. Put the servo up
+                    self.servo_down()
                     self.approximate_bezier_with_arcs(current_pos, p1, p2, p3) #need to add variable for approximation tolerance. For now going with .5 user unit.
 
                     #Save endpoint of curve as new current position
                     current_pos = p3
                 else:
-                    # For curves and arcs, we'll issue a warning
+                    # For arcs, or all others, we'll issue a warning
                     inkex.errormsg(f"Warning: Segment type '{type(segment).__name__}' is not supported and will be ignored.")
                     # Alternatively, you can choose to approximate curves manually
 
         # G-code footer
-        self.gcode.append("M5 ; Disable laser")
+        self.servo_up()
         self.gcode.append("G0 X0 Y0 ; Move to origin")
 
         # Handle file output
@@ -137,6 +143,19 @@ class PathToGcode(inkex.EffectExtension):
         # Generate G-code arcs
         for arc in arcs:
             self.generate_gcode_arc(arc)
+
+    def servo_up(self):
+        #Put the servo up if not already, and set the tracker variable
+        if self.servo_status_down:
+            self.gcode.append(self.options.servo_up)
+            self.servo_status_down = False
+
+    def servo_down(self):
+        #Put the servo down if not already, and set the tracker variable
+        if not self.servo_status_down:
+
+            self.gcode.append(self.options.servo_down)
+            self.servo_status_down = True
     
     def recursive_approximation(self, p0, p1, p2, p3, tolerance):
         # Calculate circle through start, mid, and end points

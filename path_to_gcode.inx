@@ -4,7 +4,9 @@
     <id>path2gcode.effect</id>
 
     <param name="feedrate" type="float" min="0.0" max="10000.0" _gui-text="Feed Rate (mm/min):">600</param>
-    <param name="servo_angle" type="int" min="0" max="90" _gui-text="Servo Angle (0-90 degrees)">90</param>
+    <param name="servo_up" type="string" _gui-text="Servo Up Gcode">M5</param>
+    <param name="servo_down" type="string" _gui-text="Servo Down Gcode">M3 S90</param>
+    <param name="mark_zero" type="boolean" _gui-text="Mark 0,0">true</param>
     <param name="directory" type="string" _gui-text="Directory:"></param>
     <param name="filename" type="string" _gui-text="Filename:">output.gcode</param>
     <param name="add_numeric_suffix_to_filename" type="boolean" _gui-text="Add numeric suffix to filename">true</param>
