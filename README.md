@@ -12,9 +12,9 @@ We skip all that. Gcode uses the top-right cartesian plain, but inkscape (presum
 
 ## TODO:
  - Enable mirroring by inverting Y axis.
- - Incorperate servo parameters from GUI
+ - ~~Incorperate servo parameters from GUI~~
  - Add GUI elements for different feed rates for move and cut/score
- - Keep track of cutter up/down for fewer gcode commands
+ - ~~Keep track of cutter up/down for fewer gcode commands~~
  - Enable Y offset - GUI adjustable, but default to document height.
  - Fix that curves don't use unit conversions (right now, they assume everyone is in mm)
 
