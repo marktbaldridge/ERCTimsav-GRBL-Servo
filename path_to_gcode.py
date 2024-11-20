@@ -79,6 +79,7 @@ class Gcode:
 
 class PathToGcode(inkex.EffectExtension):
     def add_arguments(self, pars):
+        pars.add_argument("--tolerance", type=float, default=.5, help="Curve and Arc approximation tolerance (mm)")
         pars.add_argument("--feedrate", type=float, default=600.0, help="Feed Rate (mm/min)")
         pars.add_argument("--servo_up", type=str, default="M5", help="Gcode to move cutter up")
         pars.add_argument("--servo_down", type=str, default="M3 S90", help="Gcode to put cutter down")
@@ -98,6 +99,7 @@ class PathToGcode(inkex.EffectExtension):
         self.gcode = Gcode(self.options)
         
         feedrate = self.options.feedrate
+        tolerance = self.options.tolerance
         
         if self.options.mark_zero:
             self.gcode.go_home()
@@ -153,10 +155,24 @@ class PathToGcode(inkex.EffectExtension):
                     p2 = (segment.x3, segment.y3)
                     p3 = (segment.x4, segment.y4)
                     self.gcode.servo_down()
-                    self.approximate_bezier_with_arcs(p0, p1, p2, p3)
+                    self.approximate_bezier_with_arcs(p0, p1, p2, p3, tolerance)
                     current_pos = p3
+                elif isinstance(segment, Arc):
+                    # Convert arc to Bezier curves
+                    prev_point = inkex.transforms.Vector2d()
+                    prev_point.x = current_pos[0]
+                    prev_point.y = current_pos[1]
+                    beziers = segment.to_curves(prev_point)
+                    for segment in beziers:
+                        p0 = current_pos
+                        p1 = (segment.x2, segment.y2)
+                        p2 = (segment.x3, segment.y3)
+                        p3 = (segment.x4, segment.y4)
+                        self.gcode.servo_down()
+                        self.approximate_bezier_with_arcs(p0, p1, p2, p3, tolerance)
+                        current_pos = (segment.x4, segment.y4)
                 else:
-                    # For arcs, or all others, we'll issue a warning
+                    # For all others, we'll issue a warning
                     inkex.errormsg(f"Warning: Segment type '{type(segment).__name__}' is not supported and will be ignored.")
         
         # Add G-code footer

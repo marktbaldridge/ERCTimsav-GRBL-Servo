@@ -2,7 +2,8 @@
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension" type="effect">
     <name>Path to G-code Converter</name>
     <id>path2gcode.effect</id>
-
+    
+    <param name="tolerance" type="float" min=".01" max="5" _gui-text="Curve and Arc approximation tolerance (mm):">.5</param>
     <param name="feedrate" type="float" min="0.0" max="10000.0" _gui-text="Feed Rate (mm/min):">600</param>
     <param name="servo_up" type="string" _gui-text="Servo Up Gcode">M5</param>
     <param name="servo_down" type="string" _gui-text="Servo Down Gcode">M3 S90</param>
@@ -13,7 +14,7 @@
     <param name="filename" type="string" _gui-text="Filename:">output.gcode</param>
     <param name="add_numeric_suffix_to_filename" type="boolean" _gui-text="Unique Filename Suffix">true</param>
 
-    <effect>
+    <effect type="path" live_preview="false">
         <effects-menu>
             <submenu _name="ERC Tim Sav"/>
         </effects-menu>
