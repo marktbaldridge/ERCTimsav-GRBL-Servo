@@ -27,7 +27,7 @@ class Gcode:
         
     def add_footer(self):
         self.servo_up()
-        self.add_fast_move(0, 0)
+        self.go_home()
     
     def servo_up(self):
         if self.servo_status_down:
@@ -44,6 +44,10 @@ class Gcode:
             y = -y
             y = y + self.y_offset
         self.commands.append(f"G0 X{x:.4f} Y{y:.4f}")
+    
+    def go_home(self):
+        self.servo_up()
+        self.commands.append("G0 X0 Y0")
     
     def add_linear_move(self, x, y, feedrate=None):
         if self.y_invert:
@@ -96,7 +100,7 @@ class PathToGcode(inkex.EffectExtension):
         feedrate = self.options.feedrate
         
         if self.options.mark_zero:
-            self.gcode.add_fast_move(0, 0)
+            self.gcode.go_home()
             self.gcode.servo_down()
             self.gcode.add_dwell(0.5)
             self.gcode.servo_up()
@@ -116,8 +120,6 @@ class PathToGcode(inkex.EffectExtension):
 
             # Convert path to absolute coordinates
             path = path.to_absolute()
-            inkex.utils.debug("processing element")
-            inkex.utils.debug(path)
 
             starting_pos = None
             current_pos = None
