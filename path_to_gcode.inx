@@ -5,8 +5,8 @@
     
     <param name="tolerance" type="float" min=".01" max="5" _gui-text="Curve and Arc approximation tolerance (mm):">.5</param>
     <param name="feedrate" type="float" min="0.0" max="10000.0" _gui-text="Feed Rate (mm/min):">600</param>
-    <param name="servo_up" type="string" _gui-text="Servo Up Gcode">M5</param>
-    <param name="servo_down" type="string" _gui-text="Servo Down Gcode">M3 S90</param>
+    <param name="needle_up" type="string" _gui-text="Needle Up Gcode">M5</param>
+    <param name="needle_down" type="string" _gui-text="Needle Down Gcode">M3 S90</param>
     <param name="mark_zero" type="boolean" _gui-text="Mark 0,0">true</param>
     <param name="y_invert" type="boolean" _gui-text="Invert the Y axis (y' = -y)">true</param>
     <param name="y_offset" type="float" min="0.0" max="100000" _gui-text="Offset the Y axis (y'' = y' + offset) if inverted.">508</param>

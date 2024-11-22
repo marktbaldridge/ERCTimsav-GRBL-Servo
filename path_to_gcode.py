@@ -9,9 +9,9 @@ from inkex.units import convert_unit
 class Gcode:
     def __init__(self, options):
         self.commands = []
-        self.servo_status_down = False
-        self.servo_up_command = options.servo_up
-        self.servo_down_command = options.servo_down
+        self.needle_status_down = False
+        self.needle_up_command = options.needle_up
+        self.needle_down_command = options.needle_down
         self.feedrate = options.feedrate
         self.y_invert = options.y_invert
         self.y_offset = options.y_offset
@@ -22,22 +22,22 @@ class Gcode:
         self.commands.extend([
             "G21 ; Set units to millimeters",
             "G90 ; Use absolute coordinates",
-            f"{self.servo_up_command} ; Servo_Up",
+            f"{self.needle_up_command} ; Needle_Up",
         ])
         
     def add_footer(self):
-        self.servo_up()
-        self.go_home()
+        self.needle_up()
+        self.add_go_home()
     
-    def servo_up(self):
-        if self.servo_status_down:
-            self.commands.append(self.servo_up_command)
-            self.servo_status_down = False
+    def needle_up(self):
+        if self.needle_status_down:
+            self.commands.append(self.needle_up_command)
+            self.needle_status_down = False
     
-    def servo_down(self):
-        if not self.servo_status_down:
-            self.commands.append(self.servo_down_command)
-            self.servo_status_down = True
+    def needle_down(self):
+        if not self.needle_status_down:
+            self.commands.append(self.needle_down_command)
+            self.needle_status_down = True
     
     def add_fast_move(self, x, y):
         if self.y_invert:
@@ -45,8 +45,8 @@ class Gcode:
             y = y + self.y_offset
         self.commands.append(f"G0 X{x:.4f} Y{y:.4f}")
     
-    def go_home(self):
-        self.servo_up()
+    def add_go_home(self):
+        self.needle_up()
         self.commands.append("G0 X0 Y0")
     
     def add_linear_move(self, x, y, feedrate=None):
@@ -81,8 +81,8 @@ class PathToGcode(inkex.EffectExtension):
     def add_arguments(self, pars):
         pars.add_argument("--tolerance", type=float, default=.5, help="Curve and Arc approximation tolerance (mm)")
         pars.add_argument("--feedrate", type=float, default=600.0, help="Feed Rate (mm/min)")
-        pars.add_argument("--servo_up", type=str, default="M5", help="Gcode to move cutter up")
-        pars.add_argument("--servo_down", type=str, default="M3 S90", help="Gcode to put cutter down")
+        pars.add_argument("--needle_up", type=str, default="M5", help="Gcode to move cutter up")
+        pars.add_argument("--needle_down", type=str, default="M3 S90", help="Gcode to put cutter down")
         pars.add_argument("--mark_zero", type=inkex.Boolean, default=True, help="Mark 0,0")
         pars.add_argument("--directory", type=str, default="", help="Output directory")
         pars.add_argument("--filename", type=str, default="output.gcode", help="Output filename")
@@ -102,10 +102,10 @@ class PathToGcode(inkex.EffectExtension):
         tolerance = self.options.tolerance
         
         if self.options.mark_zero:
-            self.gcode.go_home()
-            self.gcode.servo_down()
+            self.gcode.add_go_home()
+            self.gcode.needle_down()
             self.gcode.add_dwell(0.5)
-            self.gcode.servo_up()
+            self.gcode.needle_up()
         
         # Unit conversion: document units to millimeters
         doc_unit = self.svg.unit
@@ -132,7 +132,7 @@ class PathToGcode(inkex.EffectExtension):
                     current_pos = x, y
                     x_mm = x * self.scale_factor
                     y_mm = y * self.scale_factor
-                    self.gcode.servo_up()
+                    self.gcode.needle_up()
                     self.gcode.add_fast_move(x_mm, y_mm)
                     if starting_pos is None:
                         starting_pos = (x, y)
@@ -141,20 +141,20 @@ class PathToGcode(inkex.EffectExtension):
                     current_pos = x, y
                     x_mm = x * self.scale_factor
                     y_mm = y * self.scale_factor
-                    self.gcode.servo_down()
+                    self.gcode.needle_down()
                     self.gcode.add_linear_move(x_mm, y_mm)
                 elif isinstance(segment, ZoneClose) or isinstance(segment, zoneClose):
                     current_pos = starting_pos
                     x_mm = starting_pos[0] * self.scale_factor
                     y_mm = starting_pos[1] * self.scale_factor
-                    self.gcode.servo_down()
+                    self.gcode.needle_down()
                     self.gcode.add_linear_move(x_mm, y_mm)
                 elif isinstance(segment, Curve):
                     p0 = current_pos
                     p1 = (segment.x2, segment.y2)
                     p2 = (segment.x3, segment.y3)
                     p3 = (segment.x4, segment.y4)
-                    self.gcode.servo_down()
+                    self.gcode.needle_down()
                     self.approximate_bezier_with_arcs(p0, p1, p2, p3, tolerance)
                     current_pos = p3
                 elif isinstance(segment, Arc):
@@ -168,7 +168,7 @@ class PathToGcode(inkex.EffectExtension):
                         p1 = (segment.x2, segment.y2)
                         p2 = (segment.x3, segment.y3)
                         p3 = (segment.x4, segment.y4)
-                        self.gcode.servo_down()
+                        self.gcode.needle_down()
                         self.approximate_bezier_with_arcs(p0, p1, p2, p3, tolerance)
                         current_pos = (segment.x4, segment.y4)
                 else:
