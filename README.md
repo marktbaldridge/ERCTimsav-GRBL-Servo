@@ -43,3 +43,7 @@ This is a niche Inkscape plugin that aims to provide simple, direct conversion o
  - Robust code that handles errors well and fails gracefully.
  - Only support latest versions of Inkscape. This is in line with a "rolling release" mentality that I like in Arch linux.
  - KISS (Keep It Simple, Stupid) code that is easily debugged and maintained.
+
+ ---
+
+ This extension was primarily written in [English](https://en.wikipedia.org/wiki/English_language) and compiled into [Python](https://en.wikipedia.org/wiki/Python_(programming_language)) with [GPT o1-preview](https://openai.com/o1/). Some amount of post-compilation linking was required.
