@@ -36,6 +36,7 @@ This is a niche Inkscape plugin that aims to provide simple, direct conversion o
  - ~~Enable Y offset - GUI adjustable, but default to document height.~~
  - ~~Fix that curves don't use unit conversions (right now, they assume everyone is in mm)~~
  - Implement an algorithm that optimizes cutting route.
+ - Add error catching for maximum recursion depth exceeded. This typically ocurrs on curves which are so subtle that they could easily be replaced by a line. Consider replacing segment with line, and issuing warning.
 
 ## Project Objectives:
  - Primary focus on CNC needle cutters for foam board. May also apply to laser cutters. Zero cut width assumed.
