@@ -39,7 +39,7 @@ This is a niche Inkscape plugin that aims to provide simple, direct conversion o
  - Add error catching for maximum recursion depth exceeded. This typically ocurrs on curves which are so subtle that they could easily be replaced by a line. Consider replacing segment with line, and issuing warning.
 
 ### Path Sorting Algorithm
-This extension performs a simple path optimization procedure. All of the start and end points of a path element are noted. Starting from (0,0), the closeset start or end point is found (through a simplistic bubble sort). This path is added to a new list. If an end-point was chosen, the path is reversed. This process repeats until the original list is empty. 
+This extension performs a simple path optimization procedure. All of the start and end points of each path element are noted. Starting from (0,0), the closeset start or end point is found (through a simplistic bubble sort). This path is added to a new list. If an end-point was chosen, the path is reversed. This process repeats until the original list is empty. 
 
 ## Project Objectives:
  - Primary focus on CNC needle cutters for foam board. May also apply to laser cutters. Zero cut width assumed.
@@ -50,4 +50,4 @@ This extension performs a simple path optimization procedure. All of the start a
 
  ---
 
- This extension was primarily written in [English](https://en.wikipedia.org/wiki/English_language) and compiled into [Python](https://en.wikipedia.org/wiki/Python_(programming_language)) with [GPT o1-preview](https://openai.com/o1/). Some amount of post-compilation linking was required.
+ This extension was primarily written in [English](https://en.wikipedia.org/wiki/English_language) and compiled into [Python](https://www.python.org/) with [GPT o1-preview](https://openai.com/o1/). Some amount of post-compilation linking was required.
