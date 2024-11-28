@@ -95,6 +95,71 @@ class PathToGcode(inkex.EffectExtension):
             inkex.errormsg("Please select at least one path.")
             return
         
+        #Sort selected elements to minimize hopping between paths.
+        selected_elements = self.svg.selection.filter(PathElement)
+        
+        count = 0
+        #Add start and end points (as tuples) to each element
+        for element in selected_elements:
+            # Get the cumulative transformation matrix for the path
+            transform = element.composed_transform()
+            
+            csp = element.path.transform(transform).to_superpath()
+            
+            first_segment = csp[0][0] #First segment in first subpath
+            last_segment = csp[-1][-1] #Last segment in last subpath
+            
+            element.start_point = first_segment[0]
+            element.end_point = last_segment[-1]
+            element.index = count
+            count = count + 1
+        
+        current_point = [0, 508]
+        sorted_elements = []
+        
+        for element in selected_elements:
+            inkex.utils.debug(element.index)
+        inkex.utils.debug("^^org list")
+        while selected_elements:
+            min_distance = float('inf')
+            closest_element = None
+            reverse = False
+            min_index = -1  # Initialize min_index
+        
+            # Find the closest element to current_point
+            for i in range(len(selected_elements)):
+                
+                #Get element at current index.
+                element = selected_elements[i]
+                
+                #Find distance from current point to start or end of element
+                dist_start = self.distance(current_point, element.start_point)
+                dist_end = self.distance(current_point, element.end_point)
+                inkex.utils.debug(element.index)
+                
+                if dist_start < min_distance:
+                    min_distance = dist_start
+                    closest_element = element
+                    reverse = False
+                    min_index = i  # Keep track of the index
+                if dist_end < min_distance:
+                    min_distance = dist_end
+                    closest_element = element
+                    reverse = True
+                    min_index = i  # Keep track of the index
+        
+            # Remove the closest element using the correct index
+            selected_elements.pop(min_index)
+        
+            closest_element.reverse = reverse
+            sorted_elements.append(closest_element)
+        
+            # Update current_point after adding the closest element
+            if reverse:
+                current_point = closest_element.start_point
+            else:
+                current_point = closest_element.end_point
+
         # Initialize G-code generator
         self.gcode = Gcode(self.options)
         
@@ -113,13 +178,18 @@ class PathToGcode(inkex.EffectExtension):
         inkex.utils.debug(f"Scale factor: {self.scale_factor:.4f}")
         
         # Process selected paths
-        for element in self.svg.selection.filter(PathElement):
+        for element in sorted_elements:#self.svg.selection.filter(PathElement):#sorted_elements:
+            inkex.utils.debug(element.index)
+            inkex.utils.debug(element.reverse)
             path = element.path
-
+            
             # Apply transformations
             transform = element.composed_transform()
             path = path.transform(transform)
-
+            
+            if element.reverse:
+                path = path.reverse()
+            
             # Convert path to absolute coordinates
             path = path.to_absolute()
 
@@ -298,6 +368,10 @@ class PathToGcode(inkex.EffectExtension):
             unique_filename = f"{base}_{i}{ext}"
             i += 1
         return unique_filename
+    
+    def distance(self, p1, p2):
+        """Calculate Euclidean distance between two points."""
+        return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
 
 if __name__ == '__main__':
     PathToGcode().run()

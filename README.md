@@ -35,8 +35,11 @@ This is a niche Inkscape plugin that aims to provide simple, direct conversion o
  - ~~Keep track of cutter up/down for fewer gcode commands~~
  - ~~Enable Y offset - GUI adjustable, but default to document height.~~
  - ~~Fix that curves don't use unit conversions (right now, they assume everyone is in mm)~~
- - Implement an algorithm that optimizes cutting route.
+ - ~~Implement an algorithm that optimizes cutting route.~~
  - Add error catching for maximum recursion depth exceeded. This typically ocurrs on curves which are so subtle that they could easily be replaced by a line. Consider replacing segment with line, and issuing warning.
+
+### Path Sorting Algorithm
+This extension performs a simple path optimization procedure. All of the start and end points of a path element are noted. Starting from (0,0), the closeset start or end point is found (through a simplistic bubble sort). This path is added to a new list. If an end-point was chosen, the path is reversed. This process repeats until the original list is empty. 
 
 ## Project Objectives:
  - Primary focus on CNC needle cutters for foam board. May also apply to laser cutters. Zero cut width assumed.
